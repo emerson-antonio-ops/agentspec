@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **Phase 3 build is now fully autonomous — decide, never ask** (#20) — `/build` no longer pauses mid-build to ask the user when it hits an ambiguous decision fork. The build-agent now picks the option most consistent with the DESIGN, `.claude/kb/` patterns, and the "smallest correct change" principle, then proceeds without interruption. Every autonomous choice is recorded in the new `## Autonomous Decisions` table in the BUILD_REPORT for post-run audit. The only stop conditions are a CRITICAL risk (secrets, irreversible deploy, data loss) or a build that genuinely cannot complete after retries — both logged as blockers, never raised as questions. Updated `.claude/agents/workflow/build-agent.md`, `.claude/commands/workflow/build.md`, and `.claude/sdd/templates/BUILD_REPORT_TEMPLATE.md` (mirrored into `plugin/` by the build).
 - `plugin/README.md` — "Auto-Invoked Skills" count corrected from 4 to 5 (added `agent-router` to the list); domain list now enumerates all 24 domains including Supabase and shared anti-patterns.
 
 ## [3.2.0] - 2026-05-01
