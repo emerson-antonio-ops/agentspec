@@ -155,6 +155,16 @@ if [[ -d "${EXTRAS_DIR}" ]]; then
     ok "Plugin-extras copied"
 fi
 
+# Ship scripts/judge.py so the /judge command resolves inside the plugin.
+# Without this the command exists but cannot execute.
+if [[ -f "${SCRIPT_DIR}/scripts/judge.py" ]]; then
+    mkdir -p "${PLUGIN_DIR}/scripts"
+    cp "${SCRIPT_DIR}/scripts/judge.py" "${PLUGIN_DIR}/scripts/judge.py"
+    ok "Shipped scripts/judge.py to plugin"
+else
+    warn "scripts/judge.py not found — /judge will not run inside the plugin"
+fi
+
 # ─── Step 3: Remove workspace-specific directories ───────────────────────────
 
 info "Removing workspace-specific directories from plugin..."

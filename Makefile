@@ -16,7 +16,9 @@
 SHELL := /usr/bin/env bash
 
 .DEFAULT_GOAL := help
-.PHONY: help build test check lint clean generate plugin install-deps
+.PHONY: help build test check lint clean generate plugin install-deps \
+        build-claude build-cursor build-copilot build-mcp build-all \
+        validate-all clean-dist
 
 # ----------------------------------------------------------------------------
 # Help
@@ -47,6 +49,32 @@ generate: ## Regenerate agent-router artifacts (SKILL.md + routing.json)
 	@python3 scripts/generate-agent-router.py
 
 plugin: build ## Alias for `make build`
+
+# ----------------------------------------------------------------------------
+# Multi-platform targets — Claude Code, Cursor, VS Code + Copilot, MCP
+# ----------------------------------------------------------------------------
+
+build-claude: ## Build Claude Code distribution under dist/claude/
+	@python3 scripts/build_all.py --only claude
+
+build-cursor: ## Build Cursor distribution under dist/cursor/
+	@python3 scripts/build_all.py --only cursor
+
+build-copilot: ## Build VS Code + Copilot distribution under dist/vscode-copilot/
+	@python3 scripts/build_all.py --only vscode-copilot
+
+build-mcp: ## Build AgentSpec MCP distribution under dist/mcp/
+	@python3 scripts/build_all.py --only mcp
+
+build-all: ## Build every multi-platform target into dist/
+	@python3 scripts/build_all.py
+
+validate-all: ## Validate every dist/ target (counts, manifests, stale paths)
+	@python3 scripts/validate_dist.py
+
+clean-dist: ## Remove the dist/ tree
+	@rm -rf dist
+	@echo "dist/ removed. Run 'make build-all' to rebuild."
 
 # ----------------------------------------------------------------------------
 # Hygiene
