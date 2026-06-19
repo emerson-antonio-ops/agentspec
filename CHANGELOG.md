@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- **README rewritten for the fork** — repository URLs now point at `emerson-antonio-ops/agentspec`, the maintainer/upstream attribution is surfaced under the title, the install table mentions the fork's marketplace path, a dedicated "Cursor — local install end-to-end" expander documents the `make build-cursor` + sideload + MCP wire-up flow, the project structure exposes `scripts/lib/`, `tests/` and per-platform path tokens, and a new "Maintainer & Attribution" section names Emerson Antonio (maintainer) and Luan Moreno (original-author) with the relevant repos. Two `<details>` blocks separate the fork install from the upstream stable install so contributors can pick the right path quickly.
 - **Manifest authorship reflects fork maintainer with upstream credit** — `scripts/lib/platforms.py` now exposes a single `PROJECT_METADATA` dataclass that every per-platform manifest consumes. `author` becomes the fork maintainer (Emerson Antonio), the upstream IP owner (Luan Moreno) is preserved as a `contributors[0]` entry with role `original-author`, and a new `upstream` field plus a "Maintained by … fork of …" suffix on every `description` keep the attribution chain visible in Cursor's Plugins panel, the Claude marketplace card, and the VS Code + Copilot manifest. `scripts/build_claude.py`, `scripts/build_cursor.py`, and `scripts/build_copilot.py` were collapsed onto the shared metadata so the three manifests cannot drift again.
 
 ### Fixed
