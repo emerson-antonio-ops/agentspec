@@ -34,7 +34,8 @@ from scripts.lib.packaging import (
 
 
 PROFILE = platforms.get_profile(platforms.COPILOT)
-PLUGIN_VERSION = "3.3.0"
+META = platforms.PROJECT_METADATA
+PLUGIN_VERSION = META.version
 
 
 # Map of workflow agents to their handoff target. We use the SDD contract
@@ -190,20 +191,20 @@ def _render_copilot_agent(data: dict[str, object], body: str) -> str:
 # ── Manifests ────────────────────────────────────────────────────────────────
 
 def _emit_manifest(output_dir: Path) -> None:
+    copilot_blurb = (
+        "AgentSpec: Spec-Driven Data Engineering for VS Code + Copilot — "
+        "58 agents, 31 commands, 24 KB domains."
+    )
     plugin_manifest = {
-        "name": "agentspec",
-        "version": PLUGIN_VERSION,
-        "description": (
-            "AgentSpec: Spec-Driven Data Engineering for VS Code + Copilot — "
-            "58 agents, 31 commands, 24 KB domains."
-        ),
-        "author": {
-            "name": "Luan Moreno",
-            "email": "luan.moreno@owshq.com",
-            "url": "https://github.com/luanmorenommaciel",
-        },
-        "license": "MIT",
-        "repository": "https://github.com/luanmorenommaciel/agentspec",
+        "name": META.name,
+        "version": META.version,
+        "description": META.description_with_credit(copilot_blurb),
+        "author": META.author(),
+        "contributors": META.contributors(),
+        "license": META.license,
+        "repository": META.repository,
+        "homepage": META.homepage,
+        "upstream": META.upstream_repository,
         "skills": "skills/",
         "agents": "agents/",
         "commands": "commands/",

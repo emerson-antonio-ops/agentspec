@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **`build-plugin.sh` now ships `scripts/judge.py`** alongside the existing skills and hooks, so `/judge` resolves end-to-end in published Claude Code plugins (previously missing).
 - **README install matrix** covers all four targets; CONTRIBUTING documents the multi-platform build workflow and per-target path tokens.
 
+### Changed
+
+- **Manifest authorship reflects fork maintainer with upstream credit** — `scripts/lib/platforms.py` now exposes a single `PROJECT_METADATA` dataclass that every per-platform manifest consumes. `author` becomes the fork maintainer (Emerson Antonio), the upstream IP owner (Luan Moreno) is preserved as a `contributors[0]` entry with role `original-author`, and a new `upstream` field plus a "Maintained by … fork of …" suffix on every `description` keep the attribution chain visible in Cursor's Plugins panel, the Claude marketplace card, and the VS Code + Copilot manifest. `scripts/build_claude.py`, `scripts/build_cursor.py`, and `scripts/build_copilot.py` were collapsed onto the shared metadata so the three manifests cannot drift again.
+
 ### Fixed
 
 - **Cursor/MCP hook token migration** — `plugin-extras/hooks/hooks.json` hardcoded `${CLAUDE_PLUGIN_ROOT}` and was shipped verbatim to `dist/cursor/` and `dist/mcp/`, where that variable is not resolved by the host. `scripts/lib/path_rewrite.py` now exposes `LEGACY_ROOT_TOKEN` and migrates the legacy token to the target's `root_token` for any non-Claude profile (Cursor → `${PLUGIN_ROOT}`, MCP → `${AGENTSPEC_ROOT}`). Claude and Copilot keep the original token because both runtimes recognize it natively. Covered by 5 new tests in `tests/test_lib_path_rewrite.py::TestLegacyTokenMigration`.

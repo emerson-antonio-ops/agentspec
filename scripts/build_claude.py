@@ -35,7 +35,8 @@ from scripts.lib.packaging import (
 
 
 PROFILE = platforms.get_profile(platforms.CLAUDE)
-PLUGIN_VERSION = "3.3.0"
+META = platforms.PROJECT_METADATA
+PLUGIN_VERSION = META.version
 
 
 def _copy_source(output_dir: Path) -> None:
@@ -102,40 +103,32 @@ def _emit_manifest(output_dir: Path) -> None:
     manifest_dir = output_dir / ".claude-plugin"
     manifest_dir.mkdir(parents=True, exist_ok=True)
     plugin_manifest = {
-        "name": "agentspec",
-        "version": PLUGIN_VERSION,
-        "description": (
-            "Spec-Driven Development framework for Data Engineering — "
-            "58 agents, 24 KB domains, 5-phase SDD workflow, 31 commands"
-        ),
-        "author": {
-            "name": "Luan Moreno",
-            "url": "https://github.com/luanmorenommaciel",
-        },
-        "license": "MIT",
-        "repository": "https://github.com/luanmorenommaciel/agentspec",
-        "homepage": "https://github.com/luanmorenommaciel/agentspec",
-        "keywords": [
-            "data-engineering", "sdd", "spec-driven-development",
-            "dbt", "spark", "airflow", "pipeline", "schema-design",
-            "data-quality", "lakehouse", "medallion", "streaming",
-        ],
+        "name": META.name,
+        "version": META.version,
+        "description": META.description_with_credit(META.description_short),
+        "author": META.author(),
+        "contributors": META.contributors(),
+        "license": META.license,
+        "repository": META.repository,
+        "homepage": META.homepage,
+        "upstream": META.upstream_repository,
+        "keywords": list(META.keywords),
     }
     packaging.write_json(manifest_dir / "plugin.json", plugin_manifest)
     marketplace = {
-        "name": "agentspec",
+        "name": META.name,
         "metadata": {"description": plugin_manifest["description"]},
         "owner": {
-            "name": "Luan Moreno",
-            "email": "luan.moreno@owshq.com",
+            "name": META.author_name,
+            "email": META.author_email,
         },
         "plugins": [
             {
-                "name": "agentspec",
-                "version": PLUGIN_VERSION,
+                "name": META.name,
+                "version": META.version,
                 "description": plugin_manifest["description"],
                 "source": "./",
-                "keywords": plugin_manifest["keywords"][:7],
+                "keywords": list(META.keywords[:7]),
             }
         ],
     }
