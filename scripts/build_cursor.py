@@ -35,7 +35,8 @@ from scripts.lib.packaging import (
 
 
 PROFILE = platforms.get_profile(platforms.CURSOR)
-PLUGIN_VERSION = "3.3.0"
+META = platforms.PROJECT_METADATA
+PLUGIN_VERSION = META.version
 
 
 # ── Command → Skill conversion ───────────────────────────────────────────────
@@ -124,20 +125,20 @@ def _normalize_agents(output_dir: Path) -> int:
 
 def _emit_manifest(output_dir: Path) -> None:
     """Emit both Cursor-native and Claude-format manifests for portability."""
+    cursor_blurb = (
+        "AgentSpec: Spec-Driven Data Engineering for Cursor — "
+        "58 agents, 31 commands, 24 KB domains."
+    )
     cursor_manifest = {
-        "name": "agentspec",
-        "version": PLUGIN_VERSION,
-        "description": (
-            "AgentSpec: Spec-Driven Data Engineering for Cursor — "
-            "58 agents, 31 commands, 24 KB domains."
-        ),
-        "author": {
-            "name": "Luan Moreno",
-            "email": "luan.moreno@owshq.com",
-            "url": "https://github.com/luanmorenommaciel",
-        },
-        "license": "MIT",
-        "repository": "https://github.com/luanmorenommaciel/agentspec",
+        "name": META.name,
+        "version": META.version,
+        "description": META.description_with_credit(cursor_blurb),
+        "author": META.author(),
+        "contributors": META.contributors(),
+        "license": META.license,
+        "repository": META.repository,
+        "homepage": META.homepage,
+        "upstream": META.upstream_repository,
         "skills": "skills/",
         "agents": "agents/",
         "commands": "commands/",

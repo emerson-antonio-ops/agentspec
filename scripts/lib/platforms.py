@@ -28,6 +28,82 @@ MCP = "mcp"
 ALL_PLATFORMS: tuple[str, ...] = (CLAUDE, CURSOR, COPILOT, MCP)
 
 
+# ── Project metadata ─────────────────────────────────────────────────────────
+
+@dataclass(frozen=True, slots=True)
+class ProjectMetadata:
+    """Single source of truth for plugin manifest authorship and identity.
+
+    Keeping this here means every per-platform builder writes the same
+    ``author``/``contributors``/``repository`` triple. The fork maintainer is
+    the canonical ``author`` (the entity shipping the artifact) and the
+    upstream IP owner is preserved as a ``contributor`` with the
+    ``original-author`` role so that downstream registries and UIs (Cursor,
+    Copilot, Claude marketplace) keep the attribution chain intact.
+    """
+
+    name: str
+    version: str
+    license: str
+    description_short: str
+    author_name: str
+    author_email: str
+    author_url: str
+    original_author_name: str
+    original_author_email: str
+    original_author_url: str
+    repository: str
+    homepage: str
+    upstream_repository: str
+    keywords: tuple[str, ...]
+
+    def author(self) -> dict[str, str]:
+        return {"name": self.author_name, "email": self.author_email, "url": self.author_url}
+
+    def contributors(self) -> list[dict[str, object]]:
+        return [{
+            "name": self.original_author_name,
+            "email": self.original_author_email,
+            "url": self.original_author_url,
+            "roles": ["original-author"],
+        }]
+
+    def description_with_credit(self, target_blurb: str) -> str:
+        """Compose a description that credits the upstream IP owner."""
+        blurb = target_blurb.rstrip()
+        if blurb and blurb[-1] not in ".!?":
+            blurb = f"{blurb}."
+        return (
+            f"{blurb} Maintained by {self.author_name}; "
+            f"fork of {self.upstream_repository} by {self.original_author_name}."
+        )
+
+
+PROJECT_METADATA = ProjectMetadata(
+    name="agentspec",
+    version="3.3.0",
+    license="MIT",
+    description_short=(
+        "Spec-Driven Development framework for Data Engineering — "
+        "58 agents, 31 commands, 24 KB domains, 5-phase SDD workflow"
+    ),
+    author_name="Emerson Antonio",
+    author_email="emerson.antonio.architect@gmail.com",
+    author_url="https://github.com/emerson-antonio-ops",
+    original_author_name="Luan Moreno",
+    original_author_email="luan.moreno@owshq.com",
+    original_author_url="https://github.com/luanmorenommaciel",
+    repository="https://github.com/emerson-antonio-ops/agentspec",
+    homepage="https://github.com/emerson-antonio-ops/agentspec",
+    upstream_repository="https://github.com/luanmorenommaciel/agentspec",
+    keywords=(
+        "data-engineering", "sdd", "spec-driven-development", "dbt", "spark",
+        "airflow", "pipeline", "schema-design", "data-quality", "lakehouse",
+        "medallion", "streaming",
+    ),
+)
+
+
 # ── Profile dataclass ────────────────────────────────────────────────────────
 
 @dataclass(frozen=True, slots=True)
