@@ -80,18 +80,6 @@ def _copy_extras(output_dir: Path) -> None:
             packaging.copy_source_tree(src, output_dir / sub)
 
 
-def _ship_judge(output_dir: Path) -> None:
-    """Ship scripts/judge.py so the /judge command resolves at runtime."""
-    judge_src = SCRIPTS_DIR / "judge.py"
-    if not judge_src.exists():
-        warn("scripts/judge.py missing — /judge will not work in the plugin")
-        return
-    scripts_target = output_dir / "scripts"
-    scripts_target.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(judge_src, scripts_target / "judge.py")
-    ok("Shipped scripts/judge.py")
-
-
 def _cleanup_scaffolding(output_dir: Path) -> None:
     """Drop scaffolding files that confuse loaders."""
     for stale in (output_dir / "agents").rglob("_template.md"):
@@ -160,7 +148,7 @@ def build(check_router: bool = False, strict_stale: bool = True) -> BuildSummary
     packaging.clean_output(output_dir)
     _copy_source(output_dir)
     _copy_extras(output_dir)
-    _ship_judge(output_dir)
+    packaging.ship_judge_assets(output_dir)
     _cleanup_scaffolding(output_dir)
     results = packaging.rewrite_paths(output_dir, PROFILE)
     _emit_manifest(output_dir)

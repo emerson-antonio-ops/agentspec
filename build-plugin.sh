@@ -155,14 +155,21 @@ if [[ -d "${EXTRAS_DIR}" ]]; then
     ok "Plugin-extras copied"
 fi
 
-# Ship scripts/judge.py so the /judge command resolves inside the plugin.
-# Without this the command exists but cannot execute.
+# Ship scripts/judge.py and Judge setup docs so /judge and --judge resolve end-to-end.
 if [[ -f "${SCRIPT_DIR}/scripts/judge.py" ]]; then
     mkdir -p "${PLUGIN_DIR}/scripts"
     cp "${SCRIPT_DIR}/scripts/judge.py" "${PLUGIN_DIR}/scripts/judge.py"
     ok "Shipped scripts/judge.py to plugin"
 else
     warn "scripts/judge.py not found — /judge will not run inside the plugin"
+fi
+
+if [[ -f "${SCRIPT_DIR}/docs/getting-started/judge-setup.md" ]]; then
+    mkdir -p "${PLUGIN_DIR}/docs/getting-started"
+    cp "${SCRIPT_DIR}/docs/getting-started/judge-setup.md" "${PLUGIN_DIR}/docs/getting-started/judge-setup.md"
+    ok "Shipped docs/getting-started/judge-setup.md to plugin"
+else
+    warn "docs/getting-started/judge-setup.md not found — Judge setup guide will not ship"
 fi
 
 # ─── Step 3: Remove workspace-specific directories ───────────────────────────

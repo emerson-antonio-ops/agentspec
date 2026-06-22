@@ -137,7 +137,7 @@ MODEL=""   # empty → judge.py picks phase default
 STRICT_FLAG=""
 [[ "$mode" == "strict" ]] && STRICT_FLAG="--strict"
 
-python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/judge.py \
   ".claude/sdd/reports/BUILD_REPORT_{FEATURE}.md" \
   --phase build \
   ${MODEL:+--model "$MODEL"} \
@@ -152,7 +152,7 @@ files individually instead of the whole report:
 
 ```bash
 # Judge the single riskiest file (migration, IAM, critical SQL)
-python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/judge.py \
   "migrations/2026_X_add_roles.sql" \
   --phase build \
   --context "Postgres migration adding NOT NULL column on 50M-row table"

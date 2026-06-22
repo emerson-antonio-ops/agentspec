@@ -8,6 +8,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- **KB/agent cross-project reuse — Sprints 2–4 (v3.4.1–v3.5.1)**:
+  - `kb_resolution` and `pack_resolution` contracts in `WORKFLOW_CONTRACTS.yaml`
+  - `init_kb_overrides()` in `init-workspace.sh` — scaffolds `.claude/kb/README.md`
+  - `docs/concepts/kb-overrides.md` — KB local-first override guide
+  - `scripts/pack.py` + `/pack` command — install, list, remove, apply org-wide packs
+  - `scripts/prepare-upstream.py` + `/prepare-upstream` command — pre-PR validation
+  - `.claude/sdd/architecture/PACK_SCHEMA.yaml` — pack manifest schema
+  - `docs/tutorials/agentspec-packs.md` — pack install tutorial
+  - Reference pack published: [agentspec-pack-example v0.1.0](https://github.com/emerson-antonio-ops/agentspec-pack-example)
+  - `tests/fixtures/pack-billing/` + `tests/test_pack.py`, `tests/test_prepare_upstream.py`
+  - Extended `_WORKSPACE_PATHS` for `.claude/kb/` and `.claude/packs/`
+  - `Makefile` target `pack-validate`
+  - Commands: 31 → 33
+
+### Added
+
+- **KB and agent cross-project reuse docs (v3.4.0 sprint 1)** — clarifies plugin-global vs project-local content and documents upstream contribution workflow:
+  - `docs/concepts/kb-agent-reuse.md` — two-layer model, platform path tokens, FAQ, sharing options
+  - `docs/contributing/upstream-kb-agents.md` — step-by-step PR guide (KB-only, KB+agent, patch scenarios)
+  - Cross-links in README, CONTRIBUTING, getting-started guides (Claude, Cursor, Copilot), and concepts index
+  - SDD artifacts: `BRAINSTORM_KB_AGENT_CROSS_PROJECT_REUSE.md`, `NOVAS_FUNCIONALIDADES_REUSO_KB_AGENTES.md`
+
+### Added
+
 - **Multi-platform distribution (Claude Code, Cursor, VS Code + Copilot, MCP)** — AgentSpec now ships native bundles for every supported runtime from a single source of truth (`.claude/`):
   - `scripts/lib/` — shared build core (`platforms.py`, `path_rewrite.py`, `frontmatter.py`, `packaging.py`) with full unit test coverage.
   - `scripts/build_all.py` — multi-target orchestrator. New `Makefile` targets: `build-claude`, `build-cursor`, `build-copilot`, `build-mcp`, `build-all`, `validate-all`, `clean-dist`.
