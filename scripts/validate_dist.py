@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from scripts.lib import packaging, platforms
-from scripts.lib.path_rewrite import stale_references
+from scripts.lib.path_rewrite import stale_legacy_tokens, stale_references
 from scripts.lib.platforms import PlatformProfile
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -127,11 +127,23 @@ def validate_target(profile: PlatformProfile) -> CheckResult:
     if profile.id == platforms.MCP and not judge_path.exists():
         msgs.append("missing scripts/judge.py in MCP bundle")
 
+    # Judge setup guide (shipped with every target that bundles judge.py)
+    judge_doc = out / "docs" / "getting-started" / "judge-setup.md"
+    if not judge_doc.exists():
+        msgs.append(f"missing docs/getting-started/judge-setup.md at {judge_doc}")
+
     # Stale path detection
     stale = stale_references(out, profile)
     if stale:
         msgs.append(f"{len(stale)} stale .claude/ references")
         for path, line_no, line in stale[:5]:
+            msgs.append(f"  {path}:{line_no} → {line.strip()}")
+
+    # Non-Claude targets must not retain ${CLAUDE_PLUGIN_ROOT} after rewrite
+    legacy = stale_legacy_tokens(out, profile)
+    if legacy:
+        msgs.append(f"{len(legacy)} stale ${'{CLAUDE_PLUGIN_ROOT}'} references")
+        for path, line_no, line in legacy[:5]:
             msgs.append(f"  {path}:{line_no} → {line.strip()}")
 
     return CheckResult(profile.id, not msgs, msgs)

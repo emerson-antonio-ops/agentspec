@@ -84,6 +84,18 @@ class RewriteResult:
 # migrate it to their own root token; Claude keeps it verbatim.
 LEGACY_ROOT_TOKEN: str = "${CLAUDE_PLUGIN_ROOT}"
 
+# Bash default-value expansion used in phase commands for source-repo fallback.
+# This is NOT a substring of LEGACY_ROOT_TOKEN (``ROOT`` is followed by ``:-.``
+# not ``}``), so it needs an explicit migration pass before the plain replace.
+LEGACY_ROOT_TOKEN_WITH_FALLBACK: str = "${CLAUDE_PLUGIN_ROOT:-.}"
+
+
+def _fallback_root_token(token: str) -> str:
+    """Turn ``${FOO}`` into bash default-value form ``${FOO:-.}``."""
+    if token.endswith("}"):
+        return f"{token[:-1]}:-.}}"
+    return token
+
 
 def rewrite_text(text: str, profile: PlatformProfile) -> str:
     """Apply the canonical ``.claude/`` → ``{root_token}`` rewrite.
@@ -115,7 +127,12 @@ def rewrite_text(text: str, profile: PlatformProfile) -> str:
 
     # Legacy token migration: ${CLAUDE_PLUGIN_ROOT} → {target token} for
     # non-Claude targets. Avoids a no-op self-replacement on the Claude target.
+    # The ``:-.`` variant must run first — plain replace does not match it.
     if token != LEGACY_ROOT_TOKEN:
+        out = out.replace(
+            LEGACY_ROOT_TOKEN_WITH_FALLBACK,
+            _fallback_root_token(token),
+        )
         out = out.replace(LEGACY_ROOT_TOKEN, token)
 
     # Absolute paths that include the canonical root and survived earlier
@@ -209,4 +226,31 @@ def stale_references(root: Path, profile: PlatformProfile) -> list[tuple[Path, i
             if profile.root_token in line:
                 continue
             findings.append((path, i, line.rstrip()))
+    return findings
+
+
+def stale_legacy_tokens(root: Path, profile: PlatformProfile) -> list[tuple[Path, int, str]]:
+    """Return lines that still reference ``${CLAUDE_PLUGIN_ROOT}`` after a build.
+
+    Claude and Copilot intentionally keep the legacy token; other targets must
+    migrate every occurrence (including ``${CLAUDE_PLUGIN_ROOT:-.}``).
+    """
+    if profile.root_token == LEGACY_ROOT_TOKEN:
+        return []
+
+    findings: list[tuple[Path, int, str]] = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in TEXT_SUFFIXES:
+            continue
+        if ".claude-plugin" in path.parts or ".cursor-plugin" in path.parts:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for i, line in enumerate(text.splitlines(), start=1):
+            if LEGACY_ROOT_TOKEN in line or LEGACY_ROOT_TOKEN_WITH_FALLBACK in line:
+                findings.append((path, i, line.rstrip()))
     return findings

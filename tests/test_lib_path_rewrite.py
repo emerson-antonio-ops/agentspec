@@ -93,6 +93,17 @@ class TestLegacyTokenMigration:
         twice = path_rewrite.rewrite_text(once, cursor_profile)
         assert once == twice
 
+    def test_migrates_bash_default_fallback(self, cursor_profile):
+        text = "python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py"
+        result = path_rewrite.rewrite_text(text, cursor_profile)
+        assert "${CLAUDE_PLUGIN_ROOT}" not in result
+        assert "${PLUGIN_ROOT:-.}/scripts/judge.py" in result
+
+    def test_claude_keeps_bash_default_fallback(self, claude_profile):
+        text = "python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py"
+        result = path_rewrite.rewrite_text(text, claude_profile)
+        assert "${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py" in result
+
 
 class TestStaleReferences:
     def test_finds_unrewritten_paths(self, tmp_path, claude_profile):
@@ -137,6 +148,25 @@ class TestStaleReferences:
         findings = path_rewrite.stale_references(tmp_path, claude_profile)
         # Line contains the token, so it is treated as already migrated.
         assert findings == []
+
+
+class TestStaleLegacyTokens:
+    def test_finds_claude_token_on_cursor_build(self, tmp_path, cursor_profile):
+        target = tmp_path / "skill.md"
+        target.write_text(
+            "python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py\n",
+            encoding="utf-8",
+        )
+        findings = path_rewrite.stale_legacy_tokens(tmp_path, cursor_profile)
+        assert len(findings) == 1
+
+    def test_ignores_claude_profile(self, tmp_path, claude_profile):
+        target = tmp_path / "cmd.md"
+        target.write_text(
+            "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/judge.py\n",
+            encoding="utf-8",
+        )
+        assert path_rewrite.stale_legacy_tokens(tmp_path, claude_profile) == []
 
 
 class TestRewriteFile:

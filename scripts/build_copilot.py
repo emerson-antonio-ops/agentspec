@@ -80,18 +80,6 @@ def _copy_extras(output_dir: Path) -> None:
             packaging.copy_source_tree(s, output_dir / sub)
 
 
-def _ship_judge(output_dir: Path) -> None:
-    judge_src = SCRIPTS_DIR / "judge.py"
-    if not judge_src.exists():
-        warn("scripts/judge.py missing — /judge will not work for Copilot users")
-        return
-    target = output_dir / "scripts"
-    target.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(judge_src, target / "judge.py")
-
-
-# ── Workspace fallback: .github/prompts ──────────────────────────────────────
-
 def _emit_workspace_prompts(output_dir: Path) -> int:
     """Render Copilot prompt files under ``.github/prompts/`` for workspace use."""
     commands_src = output_dir / "commands"
@@ -248,7 +236,7 @@ def build(strict_stale: bool = True) -> BuildSummary:
     packaging.clean_output(output_dir)
     _copy_source(output_dir)
     _copy_extras(output_dir)
-    _ship_judge(output_dir)
+    packaging.ship_judge_assets(output_dir)
     results = packaging.rewrite_paths(output_dir, PROFILE)
     prompts = _emit_workspace_prompts(output_dir)
     agents = _emit_workspace_agents(output_dir)
