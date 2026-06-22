@@ -72,7 +72,7 @@ Custom agents become available immediately to phase commands (`/build` will rout
 
 - **The router** (`generate-agent-router.py`, `routing.json`) is a build-time artifact for the AgentSpec plugin itself. It doesn't index your local agents — Claude Code's runtime loader handles that.
 - **WORKFLOW_CONTRACTS.yaml** still defines the contract between phases. Overriding `build-agent` doesn't change *what* `/build` requires as input or output, only *how* the agent fulfills it.
-- **KB domains** are not overridden by this mechanism. To customize KB content, fork the relevant `kb/<domain>/` files into your project and reference them from your override agent.
+- **KB domains** are not overridden by this mechanism. To customize KB content, fork the relevant `kb/<domain>/` files into your project and reference them from your override agent. See [KB and Agent Reuse](kb-agent-reuse.md) for the full sharing model.
 
 ## Verification
 
@@ -83,3 +83,4 @@ After dropping an override, you can confirm it's active by running the agent and
 - [.claude/sdd/architecture/WORKFLOW_CONTRACTS.yaml](../../.claude/sdd/architecture/WORKFLOW_CONTRACTS.yaml) — the formal phase contracts
 - [.claude/agents/README.md](../../.claude/agents/README.md) — auto-generated quick reference (lives in user projects, not the AgentSpec repo)
 - [docs/concepts/README.md](README.md) — overall mental model
+- [KB and Agent Reuse](kb-agent-reuse.md) — plugin vs local; sharing across projects

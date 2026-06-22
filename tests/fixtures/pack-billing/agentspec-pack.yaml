@@ -1,0 +1,13 @@
+name: billing-pack
+version: "0.1.0"
+description: "Fictional billing analytics patterns for AgentSpec pack demo"
+min_agentspec: "3.5.0"
+author: "Emerson Antonio"
+repository: "https://github.com/emerson-antonio-ops/agentspec-pack-example"
+
+contents:
+  agents:
+    - path: agents/custom/billing-specialist.md
+  kb_domains:
+    - path: kb/billing/
+      domain: billing

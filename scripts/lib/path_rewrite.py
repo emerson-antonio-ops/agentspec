@@ -55,6 +55,8 @@ _WORKSPACE_PATHS: tuple[str, ...] = (
     ".claude/CLAUDE.md",         # user's project conventions file
     ".claude/agents/workflow",   # init-workspace creates this in the user repo
     ".claude/agents/custom",     # init-workspace creates this in the user repo
+    ".claude/kb",                # init-workspace creates this in the user repo
+    ".claude/packs",             # pack install stages content here
 )
 
 

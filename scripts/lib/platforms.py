@@ -139,6 +139,11 @@ class PlatformProfile:
         ".claude/settings",
         ".claude/plans",
         ".claude/memory",
+        ".claude/CLAUDE.md",
+        ".claude/agents/workflow",
+        ".claude/agents/custom",
+        ".claude/kb",
+        ".claude/packs",
     )
 
     extras: Mapping[str, str] = field(default_factory=dict)

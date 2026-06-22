@@ -49,6 +49,12 @@ Drop a file in `.claude/agents/<category>/<agent-name>.md` (same `name:` as
 the plugin agent) and Claude Code routes to **your** version. See
 [Agent Overrides](../concepts/agent-overrides.md).
 
+## 4b. Sharing KB and agents across projects
+
+Custom content in `.claude/agents/custom/` and `.claude/kb/` is **local to this repo**.
+The plugin catalog is **global** — update with `claude plugin update agentspec`.
+See [KB and Agent Reuse](../concepts/kb-agent-reuse.md).
+
 ## 5. Cross-model verification
 
 Set `OPENROUTER_API_KEY`, then call `/judge <file>` for a second opinion

@@ -18,7 +18,7 @@ SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 .PHONY: help build test check lint clean generate plugin install-deps \
         build-claude build-cursor build-copilot build-mcp build-all \
-        validate-all clean-dist
+        validate-all clean-dist pack-validate
 
 # ----------------------------------------------------------------------------
 # Help
@@ -75,6 +75,9 @@ validate-all: ## Validate every dist/ target (counts, manifests, stale paths)
 clean-dist: ## Remove the dist/ tree
 	@rm -rf dist
 	@echo "dist/ removed. Run 'make build-all' to rebuild."
+
+pack-validate: ## Run pack.py tests against fixture pack
+	@python3 -m pytest tests/test_pack.py -v
 
 # ----------------------------------------------------------------------------
 # Hygiene
