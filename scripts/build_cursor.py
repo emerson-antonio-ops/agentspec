@@ -205,23 +205,13 @@ def _copy_extras(output_dir: Path) -> None:
             packaging.copy_source_tree(s, output_dir / sub)
 
 
-def _ship_judge(output_dir: Path) -> None:
-    judge_src = SCRIPTS_DIR / "judge.py"
-    if not judge_src.exists():
-        warn("scripts/judge.py missing — /judge will not work in the Cursor pack")
-        return
-    target = output_dir / "scripts"
-    target.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(judge_src, target / "judge.py")
-
-
 def build(strict_stale: bool = True) -> BuildSummary:
     output_dir = platforms.dist_root(REPO_ROOT, PROFILE.id)
     packaging.regenerate_agent_router()
     packaging.clean_output(output_dir)
     _copy_source(output_dir)
     _copy_extras(output_dir)
-    _ship_judge(output_dir)
+    packaging.ship_judge_assets(output_dir)
     converted = _convert_commands(output_dir)
     normalized = _normalize_agents(output_dir)
     info(f"Skills generated from commands: {converted}")

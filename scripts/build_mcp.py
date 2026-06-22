@@ -58,16 +58,6 @@ def _copy_resources(output_dir: Path) -> None:
             packaging.copy_source_tree(s, sdd_target / sub)
 
 
-def _ship_judge(output_dir: Path) -> None:
-    judge_src = SCRIPTS_DIR / "judge.py"
-    if not judge_src.exists():
-        warn("scripts/judge.py missing — /judge tool will not work")
-        return
-    target = output_dir / "scripts"
-    target.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(judge_src, target / "judge.py")
-
-
 def _emit_mcp_config(output_dir: Path) -> None:
     config = {
         "mcpServers": {
@@ -92,7 +82,7 @@ def build(strict_stale: bool = True) -> BuildSummary:
     packaging.clean_output(output_dir)
     _copy_server(output_dir)
     _copy_resources(output_dir)
-    _ship_judge(output_dir)
+    packaging.ship_judge_assets(output_dir)
     results = packaging.rewrite_paths(output_dir, PROFILE)
     _emit_mcp_config(output_dir)
     summary = packaging.summarize(PROFILE, output_dir, results)

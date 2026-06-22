@@ -24,6 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SOURCE_DIR = REPO_ROOT / ".claude"
 EXTRAS_DIR = REPO_ROOT / "plugin-extras"
 SCRIPTS_DIR = REPO_ROOT / "scripts"
+JUDGE_SETUP_DOC = REPO_ROOT / "docs" / "getting-started" / "judge-setup.md"
 
 
 # ── Logging helpers ──────────────────────────────────────────────────────────
@@ -182,7 +183,27 @@ def regenerate_agent_router(check_only: bool = False) -> None:
     ok("agent-router regenerated")
 
 
-# ── Path rewriting wrapper ───────────────────────────────────────────────────
+# ── Judge assets + path rewriting ────────────────────────────────────────────
+
+def ship_judge_assets(output_dir: Path) -> None:
+    """Ship ``scripts/judge.py`` and Judge setup docs into a distributable tree."""
+    judge_src = SCRIPTS_DIR / "judge.py"
+    if judge_src.exists():
+        scripts_target = output_dir / "scripts"
+        scripts_target.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(judge_src, scripts_target / "judge.py")
+        ok("Shipped scripts/judge.py")
+    else:
+        warn("scripts/judge.py missing — /judge and --judge will not run")
+
+    if JUDGE_SETUP_DOC.exists():
+        docs_target = output_dir / "docs" / "getting-started"
+        docs_target.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(JUDGE_SETUP_DOC, docs_target / "judge-setup.md")
+        ok("Shipped docs/getting-started/judge-setup.md")
+    else:
+        warn(f"{JUDGE_SETUP_DOC} missing — Judge setup guide will not ship")
+
 
 def rewrite_paths(output_dir: Path, profile: PlatformProfile) -> list[RewriteResult]:
     info(f"Rewriting paths for {profile.id} → {profile.root_token}")

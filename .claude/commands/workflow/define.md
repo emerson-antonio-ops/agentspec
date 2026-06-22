@@ -164,7 +164,7 @@ MODEL=""   # empty → judge.py picks phase default
 STRICT_FLAG=""
 [[ "$mode" == "strict" ]] && STRICT_FLAG="--strict"
 
-python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/judge.py \
   ".claude/sdd/features/DEFINE_{FEATURE_NAME}.md" \
   --phase define \
   ${MODEL:+--model "$MODEL"} \
@@ -194,7 +194,7 @@ budget exhaustion.
 **Error handling:**
 
 - Exit code 2 (config error, e.g., missing `OPENROUTER_API_KEY`): show the
-  error to the user with setup pointer to `docs/getting-started/judge-setup.md`
+  error to the user with setup pointer to `${CLAUDE_PLUGIN_ROOT}/docs/getting-started/judge-setup.md`
   and continue as if `--judge` was not passed
 - Exit code 4 (network / API error): surface the error, continue advisory
 

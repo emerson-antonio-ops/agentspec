@@ -158,7 +158,7 @@ MODEL=""   # empty → judge.py picks phase default
 STRICT_FLAG=""
 [[ "$mode" == "strict" ]] && STRICT_FLAG="--strict"
 
-python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/judge.py \
   ".claude/sdd/features/DESIGN_{FEATURE_NAME}.md" \
   --phase design \
   ${MODEL:+--model "$MODEL"} \
@@ -182,7 +182,7 @@ python3 ${CLAUDE_PLUGIN_ROOT:-.}/scripts/judge.py \
 **Budget / error handling:**
 
 - Exit 3 (budget exhausted): surface ledger, continue as if `--judge` was not passed
-- Exit 2 (config error): surface setup pointer to `docs/getting-started/judge-setup.md`, continue
+- Exit 2 (config error): surface setup pointer to `${CLAUDE_PLUGIN_ROOT}/docs/getting-started/judge-setup.md`, continue
 - Exit 4 (network/API error): surface, continue advisory
 
 ---
