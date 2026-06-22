@@ -70,6 +70,12 @@ keeps `name`, `description`, `model`, and `tools`; richer metadata
 (`tier`, `kb_domains`, `escalation_rules`) lives in the body of the prompt
 so the agent still benefits from KB-first resolution.
 
+## 4b. Sharing KB and agents across projects
+
+Local paths use `.claude/` in your workspace; the plugin uses `${PLUGIN_ROOT}`.
+Custom agents and KB stay in **this repo only** — see
+[KB and Agent Reuse](../concepts/kb-agent-reuse.md).
+
 ## 5. SDD outputs
 
 The hooks bundled at `dist/cursor/hooks/hooks.json` create

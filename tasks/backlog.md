@@ -1,7 +1,7 @@
 # AgentSpec Backlog
 
-> **Last Updated:** 2026-04-17
-> **Current Version:** v3.1.0
+> **Last Updated:** 2026-06-22
+> **Current Version:** v3.3.0
 > **Source of truth for pending work** — roadmap items tracked from strategic research and community feedback
 
 ---
@@ -25,6 +25,17 @@
 
 ---
 
+## Recently Shipped (v3.4 — KB/Agent Cross-Project Reuse)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| KB/agent reuse docs (F1, F2) | 🟢 Done | `kb-agent-reuse.md`, upstream guide |
+| kb_resolution + scaffolding (F3, F4) | 🟢 Done | v3.4.1 contract, init-workspace |
+| AgentSpec Packs (F5) | 🟢 Done | `/pack`, satellite [pack-example v0.1.0](https://github.com/emerson-antonio-ops/agentspec-pack-example) |
+| `/prepare-upstream` (F6) | 🟢 Done | Pre-PR validation helper |
+
+---
+
 ## Recently Shipped (v3.1.0)
 
 | Feature | Status | Notes |
@@ -37,6 +48,71 @@
 | `/status` command | 🟢 Done | Project health reporting |
 | Stack auto-detection in init-workspace.sh | 🟢 Done | Detects 10+ tech stacks |
 | CHANGELOG and count updates across repo | 🟢 Done | 22→23 KB, 29→30 commands |
+
+---
+
+## v3.4 — KB/Agent Cross-Project Reuse 🟢 Shipped
+
+> Archive: `.claude/sdd/archive/KB_AGENT_CROSS_PROJECT_REUSE/`
+> Satellite pack: [agentspec-pack-example v0.1.0](https://github.com/emerson-antonio-ops/agentspec-pack-example)
+
+### 🟡 P1: Documentation — Reuse Model + Upstream Guide (F1, F2, F7)
+
+**Description:** Document plugin-global vs project-local content, platform path tokens, and upstream PR workflow. Closes confusion about KB/agents not propagating between repos.
+
+**Shipped (Sprint 1 — docs):**
+- [x] `docs/concepts/kb-agent-reuse.md`
+- [x] `docs/contributing/upstream-kb-agents.md`
+- [x] Cross-links in README, CONTRIBUTING, concepts, getting-started (all platforms)
+- [x] `tasks/backlog.md` section (this block)
+- [x] CHANGELOG `[Unreleased]` entry
+
+**Remaining:**
+- [ ] Tag v3.4.0 after PR merge
+
+---
+
+### 🟢 P2: kb_resolution Contract + KB Override Scaffolding (F3, F4) — v3.4.1
+
+**Description:** Formalize KB local-first precedence in WORKFLOW_CONTRACTS; scaffold `.claude/kb/README.md` via init-workspace; extend `_WORKSPACE_PATHS` with `.claude/kb/`.
+
+**Design:** `DESIGN_KB_AGENT_CROSS_PROJECT_REUSE.md` — Sprint 2 manifest items 1–9.
+
+**Shipped:**
+- [x] `kb_resolution` in WORKFLOW_CONTRACTS.yaml
+- [x] `init_kb_overrides()` in plugin-extras/scripts/init-workspace.sh
+- [x] `docs/concepts/kb-overrides.md`
+- [x] `scripts/lib/path_rewrite.py` + `platforms.py` + tests
+
+---
+
+### 🟢 P2: AgentSpec Packs (F5) — v3.5.0
+
+**Description:** Org-wide sharing via installable packs without upstream PR. Example pack in satellite repo `emerson-antonio-ops/agentspec-pack-example` (confirmed).
+
+**Design:** `DESIGN_KB_AGENT_CROSS_PROJECT_REUSE.md` — Sprint 3; pack install stage+apply with local-wins.
+
+**Shipped:**
+- [x] `PACK_SCHEMA.yaml`
+- [x] `scripts/pack.py` — install | list | remove | apply
+- [x] `.claude/commands/core/pack.md`
+- [x] `pack_resolution` in WORKFLOW_CONTRACTS.yaml
+- [x] `docs/tutorials/agentspec-packs.md`
+- [x] `tests/fixtures/pack-billing/` + `tests/test_pack.py`
+
+**Remaining:**
+- [x] Publish satellite repo `agentspec-pack-example` on GitHub — [v0.1.0](https://github.com/emerson-antonio-ops/agentspec-pack-example/releases/tag/v0.1.0)
+
+---
+
+### 🟢 P3: /prepare-upstream Command (F6) — v3.5.1
+
+**Description:** Automate pre-PR checklist — line limits, secret scan, `_index.yaml` check, diff-ready tree.
+
+**Shipped:**
+- [x] `scripts/prepare-upstream.py`
+- [x] `.claude/commands/core/prepare-upstream.md`
+- [x] `tests/test_prepare_upstream.py`
 
 ---
 

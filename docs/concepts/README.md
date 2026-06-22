@@ -96,6 +96,12 @@ During `/build`, the build-agent delegates to DE specialists: dbt models go to `
 
 Create additional domains with `/create-kb <domain>` and agents will consult them during `/design` and `/build`.
 
+### 4. Sharing KB and agents across projects
+
+Plugin content (58 agents, 24 KB domains) is **global** — every project with AgentSpec installed shares it. Content you create in `.claude/agents/custom/` or `.claude/kb/` is **local** to that repository.
+
+See [KB and Agent Reuse](kb-agent-reuse.md) for the full mental model, platform path tokens, and sharing options. See [KB Overrides](kb-overrides.md) for local KB customization. To contribute generic patterns back to the plugin, see [Upstream Contribution Guide](../contributing/upstream-kb-agents.md).
+
 ## How Phases Connect
 
 Context flows forward through the pipeline:

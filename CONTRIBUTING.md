@@ -24,6 +24,7 @@ ls .claude/kb/          # Knowledge Base
 |----------------|--------------------------------|------------------------------------------|
 | New Agent      | `.claude/agents/{category}/`   | [Adding Agents](#adding-a-new-agent)     |
 | New KB Domain  | `.claude/kb/{domain}/`         | [Adding KB Domains](#adding-a-kb-domain) |
+| KB/Agent upstream PR | `.claude/kb/` or `.claude/agents/` | [Upstream KB & Agents Guide](docs/contributing/upstream-kb-agents.md) |
 | New Command    | `.claude/commands/{category}/` | [Adding Commands](#adding-a-command)     |
 | New Skill      | `.claude/skills/{skill}/`      | [Adding Skills](#adding-a-skill)         |
 | Bug Fix        | Any file                       | [Bug Fixes](#bug-fixes)                  |

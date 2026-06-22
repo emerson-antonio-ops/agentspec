@@ -57,6 +57,8 @@ make validate-all       # sanity-check every artifact
 
 > **Override any agent locally** — drop a file in `.claude/agents/<category>/<agent-name>.md` and it takes precedence over the plugin version. See [Agent Overrides](docs/concepts/agent-overrides.md).
 
+> **Sharing KB and agents across projects** — understand what is global (plugin) vs local (your repo), and how to contribute upstream. See [KB and Agent Reuse](docs/concepts/kb-agent-reuse.md).
+
 <details>
 <summary><b>Install the upstream (stable) plugin in Claude Code</b></summary>
 

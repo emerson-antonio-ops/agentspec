@@ -110,6 +110,24 @@ class TestStaleReferences:
         findings = path_rewrite.stale_references(tmp_path, claude_profile)
         assert findings == []
 
+    def test_ignores_kb_workspace_paths(self, tmp_path, claude_profile):
+        target = tmp_path / "doc.md"
+        target.write_text(
+            "Override at .claude/kb/dbt/patterns/incremental-model.md\n",
+            encoding="utf-8",
+        )
+        findings = path_rewrite.stale_references(tmp_path, claude_profile)
+        assert findings == []
+
+    def test_ignores_packs_workspace_paths(self, tmp_path, claude_profile):
+        target = tmp_path / "doc.md"
+        target.write_text(
+            "Pack staged in .claude/packs/billing-pack/agentspec-pack.yaml\n",
+            encoding="utf-8",
+        )
+        findings = path_rewrite.stale_references(tmp_path, claude_profile)
+        assert findings == []
+
     def test_ignores_lines_with_token(self, tmp_path, claude_profile):
         target = tmp_path / "doc.md"
         target.write_text(

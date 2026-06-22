@@ -65,6 +65,10 @@ Copilot Chat now exposes:
 
 This works in any VS Code Copilot version that supports custom agents.
 
+## 4b. Sharing KB and agents across projects
+
+Custom agents (`.claude/agents/custom/`) and KB (`.claude/kb/`) are **local to each repository**. The plugin catalog is shared when you update the plugin bundle. See [KB and Agent Reuse](../concepts/kb-agent-reuse.md).
+
 ## 5. Enable the AgentSpec MCP companion (recommended)
 
 The MCP companion adds KB search, agent routing, SDD status and Judge to
