@@ -9,7 +9,7 @@ on:
       - 'build-plugin.sh'
       - 'plugin/.claude-plugin/**'
   pull_request:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - '.claude/**'
       - 'plugin-extras/**'
