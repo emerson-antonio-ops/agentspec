@@ -1,0 +1,82 @@
+# AgentSpec Pack Manifest Schema
+# Machine-readable contract for agentspec-pack.yaml at pack repository root.
+
+version: "1.0"
+description: "Schema for org-wide AgentSpec packs (agents + KB shared via git URL)"
+
+required_fields:
+  - name
+  - version
+  - description
+
+fields:
+  name:
+    type: string
+    pattern: "^[a-z][a-z0-9-]*$"
+    description: "Pack identifier; used as .claude/packs/{name}/ directory"
+    example: billing-pack
+
+  version:
+    type: string
+    pattern: "^\\d+\\.\\d+\\.\\d+$"
+    description: "Semver string stored in lockfile"
+    example: "0.1.0"
+
+  description:
+    type: string
+    max_length: 200
+    description: "One-line summary for pack list output"
+
+  min_agentspec:
+    type: string
+    required: false
+    description: "Minimum AgentSpec plugin version; warns if below (v1 does not hard-fail)"
+    example: "3.5.0"
+
+  author:
+    type: string
+    required: false
+
+  repository:
+    type: string
+    required: false
+    description: "Source URL for documentation"
+
+  contents:
+    type: object
+    required: false
+    properties:
+      agents:
+        type: array
+        items:
+          type: object
+          properties:
+            path:
+              type: string
+              description: "Relative path under pack root, e.g. agents/custom/foo.md"
+      kb_domains:
+        type: array
+        items:
+          type: object
+          properties:
+            path:
+              type: string
+            domain:
+              type: string
+
+layout:
+  required_files:
+    - agentspec-pack.yaml
+  optional_dirs:
+    - agents/custom/
+    - kb/{domain}/
+
+install_behavior:
+  stage_dir: ".claude/packs/{name}/"
+  lockfile: ".claude/packs/.lock.yaml"
+  apply_targets:
+    - from: "agents/custom/*.md"
+      to: "${CLAUDE_PLUGIN_ROOT}/agents/custom/"
+    - from: "kb/**"
+      to: "${CLAUDE_PLUGIN_ROOT}/kb/"
+  conflict_policy: "local-wins-skip"

@@ -286,5 +286,5 @@ Data engineering example:
 ## Version
 
 - **Version:** 3.5.0
-- **Status:** Release
+- **Status:** Release — multi-platform distribution (Claude Code, Cursor, VS Code + Copilot, AgentSpec MCP)
 - **Last Updated:** 2026-07-30
