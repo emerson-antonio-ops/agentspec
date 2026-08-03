@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- **Three validation workflows never ran on PRs targeting `develop`** — `multi-platform-validate`, `plugin-validate` and `quality-checks` restricted `pull_request.branches` to `main`, so every change flowing through the integration branch reached `develop` unvalidated and was only checked once a release PR opened against `main`. `multi-platform-validate` is what runs `make build-all` + `make validate-all`, so the gap hid exactly the class of build regression it exists to catch. All three now list `[main, develop]`, matching the convention already used by `bump-gate` and `e2e`. `push` triggers stay `main`-only, unchanged.
+
 - **Repo-local skills leaked into every multi-platform distribution** — `build-plugin.sh` prunes four contributor-only skills (`meeting-analysis`, `standup-report`, `create-skill`, `create-agent`) via `REPO_LOCAL_SKILLS`, but the `scripts/build_*.py` builders copied `.claude/skills/` wholesale and had no equivalent step, so those skills shipped to `dist/claude/`, `dist/cursor/`, `dist/vscode-copilot/` and `dist/mcp/`. `create-skill/SKILL.md` documents the source layout in prose, which then tripped `validate_dist.py`'s stale-`.claude/` check and failed all four targets. The exclusion list now lives in `scripts/lib/platforms.py::REPO_LOCAL_SKILLS` as the single source of truth, applied by the new `packaging.remove_repo_local_skills()` in all four builders and kept in lock-step with `build-plugin.sh`.
 
 ### Added

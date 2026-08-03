@@ -20,7 +20,7 @@ on:
       - 'tools/spec-judge/**'
       - '.github/workflows/quality-checks.yml'
   pull_request:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - 'scripts/**'
       - 'tests/**'
