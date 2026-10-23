@@ -16,7 +16,10 @@
 SHELL := /usr/bin/env bash
 
 .DEFAULT_GOAL := help
-.PHONY: help build test check lint clean generate plugin install-deps spec-lint spec-judge
+.PHONY: help build test check lint clean generate plugin install-deps \
+        spec-lint spec-judge \
+        build-claude build-cursor build-copilot build-mcp build-all \
+        validate-all clean-dist pack-validate
 
 # ----------------------------------------------------------------------------
 # Help
@@ -61,6 +64,35 @@ spec-judge: ## Run the spec-judge component test suite (tools/spec-judge, offlin
 	else \
 		( cd tools/spec-judge && python3 -m pytest -v ); \
 	fi
+
+# ----------------------------------------------------------------------------
+# Multi-platform targets — Claude Code, Cursor, VS Code + Copilot, MCP
+# ----------------------------------------------------------------------------
+
+build-claude: ## Build Claude Code distribution under dist/claude/
+	@python3 scripts/build_all.py --only claude
+
+build-cursor: ## Build Cursor distribution under dist/cursor/
+	@python3 scripts/build_all.py --only cursor
+
+build-copilot: ## Build VS Code + Copilot distribution under dist/vscode-copilot/
+	@python3 scripts/build_all.py --only vscode-copilot
+
+build-mcp: ## Build AgentSpec MCP distribution under dist/mcp/
+	@python3 scripts/build_all.py --only mcp
+
+build-all: ## Build every multi-platform target into dist/
+	@python3 scripts/build_all.py
+
+validate-all: ## Validate every dist/ target (counts, manifests, stale paths)
+	@python3 scripts/validate_dist.py
+
+clean-dist: ## Remove the dist/ tree
+	@rm -rf dist
+	@echo "dist/ removed. Run 'make build-all' to rebuild."
+
+pack-validate: ## Run pack.py tests against fixture pack
+	@python3 -m pytest tests/test_pack.py -v
 
 # ----------------------------------------------------------------------------
 # Hygiene

@@ -112,6 +112,52 @@ EOF
 }
 
 # ---------------------------------------------------------------------------
+# Phase 1.6: Local KB Override Scaffolding
+# ---------------------------------------------------------------------------
+
+init_kb_overrides() {
+    if [[ ! -d ".git" ]] && [[ ! -f "CLAUDE.md" ]] && [[ ! -d ".claude" ]]; then
+        return 0
+    fi
+
+    mkdir -p .claude/kb 2>/dev/null || true
+
+    local readme=".claude/kb/README.md"
+    if [[ -f "$readme" ]]; then
+        return 0
+    fi
+
+    cat > "$readme" <<'EOF'
+# Local KB — Override AgentSpec
+
+Knowledge base files in `.claude/kb/` **override plugin KB files**
+at the same path (file-level local-wins).
+
+## Override a plugin KB file
+
+```bash
+mkdir -p .claude/kb/dbt/patterns
+cp $CLAUDE_PLUGIN_ROOT/kb/dbt/patterns/incremental-model.md \
+   .claude/kb/dbt/patterns/incremental-model.md
+```
+
+## Add a custom domain
+
+Use `/create-kb <domain>` or copy templates from the plugin `_templates/`.
+
+## Resolution order
+
+```text
+.claude/kb/<domain>/<file>   (your local override — wins)
+        ↓ if absent
+${CLAUDE_PLUGIN_ROOT}/kb/<domain>/<file>   (AgentSpec plugin)
+```
+
+See `docs/concepts/kb-overrides.md` in the AgentSpec repository.
+EOF
+}
+
+# ---------------------------------------------------------------------------
 # Phase 2: Project Stack Detection
 # ---------------------------------------------------------------------------
 
@@ -355,4 +401,5 @@ generate_context_hint() {
 
 init_workspace
 init_agent_overrides
+init_kb_overrides
 generate_context_hint

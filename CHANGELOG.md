@@ -6,10 +6,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Repo-local skills leaked into every multi-platform distribution** — `build-plugin.sh` prunes four contributor-only skills (`meeting-analysis`, `standup-report`, `create-skill`, `create-agent`) via `REPO_LOCAL_SKILLS`, but the `scripts/build_*.py` builders copied `.claude/skills/` wholesale and had no equivalent step, so those skills shipped to `dist/claude/`, `dist/cursor/`, `dist/vscode-copilot/` and `dist/mcp/`. `create-skill/SKILL.md` documents the source layout in prose, which then tripped `validate_dist.py`'s stale-`.claude/` check and failed all four targets. The exclusion list now lives in `scripts/lib/platforms.py::REPO_LOCAL_SKILLS` as the single source of truth, applied by the new `packaging.remove_repo_local_skills()` in all four builders and kept in lock-step with `build-plugin.sh`.
+
+### Added
+
+- **KB/agent cross-project reuse — Sprints 2–4 (v3.4.1–v3.5.1)**:
+  - `kb_resolution` and `pack_resolution` contracts in `WORKFLOW_CONTRACTS.yaml`
+  - `init_kb_overrides()` in `init-workspace.sh` — scaffolds `.claude/kb/README.md`
+  - `docs/concepts/kb-overrides.md` — KB local-first override guide
+  - `scripts/pack.py` + `/pack` command — install, list, remove, apply org-wide packs
+  - `scripts/prepare-upstream.py` + `/prepare-upstream` command — pre-PR validation
+  - `.claude/sdd/architecture/PACK_SCHEMA.yaml` — pack manifest schema
+  - `docs/tutorials/agentspec-packs.md` — pack install tutorial
+  - Reference pack published: [agentspec-pack-example v0.1.0](https://github.com/emerson-antonio-ops/agentspec-pack-example)
+  - `tests/fixtures/pack-billing/` + `tests/test_pack.py`, `tests/test_prepare_upstream.py`
+  - Extended `_WORKSPACE_PATHS` for `.claude/kb/` and `.claude/packs/`
+  - `Makefile` target `pack-validate`
+  - Commands: 31 → 33
+
+- **KB and agent cross-project reuse docs (v3.4.0 sprint 1)** — clarifies plugin-global vs project-local content and documents upstream contribution workflow:
+  - `docs/concepts/kb-agent-reuse.md` — two-layer model, platform path tokens, FAQ, sharing options
+  - `docs/contributing/upstream-kb-agents.md` — step-by-step PR guide (KB-only, KB+agent, patch scenarios)
+  - Cross-links in README, CONTRIBUTING, getting-started guides (Claude, Cursor, Copilot), and concepts index
+  - SDD artifacts: `BRAINSTORM_KB_AGENT_CROSS_PROJECT_REUSE.md`, `NOVAS_FUNCIONALIDADES_REUSO_KB_AGENTES.md`
+
+- **Multi-platform distribution (Claude Code, Cursor, VS Code + Copilot, MCP)** — AgentSpec now ships native bundles for every supported runtime from a single source of truth (`.claude/`):
+  - `scripts/lib/` — shared build core (`platforms.py`, `path_rewrite.py`, `frontmatter.py`, `packaging.py`) with full unit test coverage.
+  - `scripts/build_all.py` — multi-target orchestrator. New `Makefile` targets: `build-claude`, `build-cursor`, `build-copilot`, `build-mcp`, `build-all`, `validate-all`, `clean-dist`.
+  - `scripts/build_claude.py` — `dist/claude/` with `.claude-plugin/plugin.json` + `marketplace.json` (the legacy `build-plugin.sh` still works and now also ships `scripts/judge.py`).
+  - `scripts/build_cursor.py` — `dist/cursor/` with `.cursor-plugin/plugin.json`, a Claude-format mirror manifest, 31 explicit skills converted from commands (`disable-model-invocation: true`), Cursor-friendly agent frontmatter, hooks, and `.mcp.json`.
+  - `scripts/build_copilot.py` — `dist/vscode-copilot/` with `.claude-plugin/plugin.json`, `.github/prompts/*.prompt.md` (31 workspace prompts), `.github/agents/*.agent.md` (58 workspace agents with SDD `handoffs:` on workflow agents), and `.vscode/settings.recommended.json`.
+  - `scripts/build_mcp.py` — `dist/mcp/` with the MCP server, `resources/` (KB + SDD + agents + skills) and `mcp.json` ready to drop into any MCP client config.
+- **AgentSpec MCP server** (`packages/agentspec-mcp/`) — zero-dependency JSON-RPC server over stdio exposing `kb_search`, `kb_read`, `route_agent`, `sdd_status` and `judge` tools. Built from `routing.json` so it stays in lock-step with the agent-router skill.
+- **`scripts/validate_dist.py`** — counts agents/commands/skills/KB domains, validates manifest schemas (Claude, Cursor, Copilot, MCP), checks for stale `.claude/` references and asserts the presence of `scripts/judge.py` and workspace fallbacks.
+- **Per-platform getting-started guides** under `docs/getting-started/` (`claude-code.md`, `cursor.md`, `vscode-copilot.md`).
+- **`.github/workflows/multi-platform-validate.yml`** — CI gate that runs `make build-all`, `make validate-all`, `python3 -m pytest tests/ -v`, the agent-router drift check, and a JSON-RPC roundtrip against the MCP server.
+- **Path-rewrite policy is now testable** — `_WORKSPACE_PATHS` is a single source of truth (covers `.claude/sdd`, `.claude/storage`, `.claude/settings`, `.claude/plans`, `.claude/memory`, `.claude/CLAUDE.md`, `.claude/agents/workflow`, `.claude/agents/custom`).
+- **`build-plugin.sh` now ships `scripts/judge.py`** alongside the existing skills and hooks, so `/judge` resolves end-to-end in published Claude Code plugins (previously missing).
+- **README install matrix** covers all four targets; CONTRIBUTING documents the multi-platform build workflow and per-target path tokens.
+
+### Changed
+
+- **README rewritten for the fork** — repository URLs now point at `emerson-antonio-ops/agentspec`, the maintainer/upstream attribution is surfaced under the title, the install table mentions the fork's marketplace path, a dedicated "Cursor — local install end-to-end" expander documents the `make build-cursor` + sideload + MCP wire-up flow, the project structure exposes `scripts/lib/`, `tests/` and per-platform path tokens, and a new "Maintainer & Attribution" section names Emerson Antonio (maintainer) and Luan Moreno (original-author) with the relevant repos. Two `<details>` blocks separate the fork install from the upstream stable install so contributors can pick the right path quickly.
+- **Manifest authorship reflects fork maintainer with upstream credit** — `scripts/lib/platforms.py` now exposes a single `PROJECT_METADATA` dataclass that every per-platform manifest consumes. `author` becomes the fork maintainer (Emerson Antonio), the upstream IP owner (Luan Moreno) is preserved as a `contributors[0]` entry with role `original-author`, and a new `upstream` field plus a "Maintained by … fork of …" suffix on every `description` keep the attribution chain visible in Cursor's Plugins panel, the Claude marketplace card, and the VS Code + Copilot manifest. `scripts/build_claude.py`, `scripts/build_cursor.py`, and `scripts/build_copilot.py` were collapsed onto the shared metadata so the three manifests cannot drift again.
+
 ## [3.5.0] - 2026-07-19
 
 ### Fixed
 
+- **Cursor/MCP hook token migration** — `plugin-extras/hooks/hooks.json` hardcoded `${CLAUDE_PLUGIN_ROOT}` and was shipped verbatim to `dist/cursor/` and `dist/mcp/`, where that variable is not resolved by the host. `scripts/lib/path_rewrite.py` now exposes `LEGACY_ROOT_TOKEN` and migrates the legacy token to the target's `root_token` for any non-Claude profile (Cursor → `${PLUGIN_ROOT}`, MCP → `${AGENTSPEC_ROOT}`). Claude and Copilot keep the original token because both runtimes recognize it natively. Covered by 5 new tests in `tests/test_lib_path_rewrite.py::TestLegacyTokenMigration`.
 - **Marketplace install path now works end-to-end** (#18) — `claude plugin marketplace add luanmorenommaciel/agentspec` previously returned HTTP 404 because the resolver fetches `.claude-plugin/marketplace.json` from the repository root, but the manifest only existed under `plugin/.claude-plugin/`:
   - Added root-level `.claude-plugin/marketplace.json` with `source: "./plugin"` pointing at the canonical built artifact
   - Added `build-plugin.sh` Step 5c that auto-regenerates the root manifest from `plugin/.claude-plugin/marketplace.json` on every build, preventing drift between the two locations

@@ -111,7 +111,7 @@ agent_resolution:
     - "Override agent's `name:` frontmatter field MUST match the plugin agent's name"
     - "WORKFLOW_CONTRACTS phase contracts (input/output/quality_gate) still apply to overrides"
     - "Custom agents (no plugin counterpart) are additive and do not require precedence"
-    - "KB domains are NOT subject to this resolution; they are loaded only from CLAUDE_PLUGIN_ROOT"
+    - "KB resolution is governed by kb_resolution below — not by agent_resolution"
 
   out_of_scope:
     - "Routing metadata in routing.json — router is build-time, not runtime"
@@ -300,6 +300,65 @@ behavioral_enforcement:
   cost_bound: "A shared, append-only per-day ledger (.claude/storage/judge-ledger.jsonl) caps spend across the judge family; the CLI preflights and refuses a panel it cannot finish."
 
   status: "prototype — re-scopes the shipped V0 reviewer's cross-model + budget mechanisms toward contract conformance; superseding V0 is a separate migration"
+
+# =============================================================================
+# KB RESOLUTION (Local-First Precedence)
+# =============================================================================
+
+kb_resolution:
+  order:
+    - "local"   # .claude/kb/<domain>/ in the user's project
+    - "plugin"  # ${ROOT_TOKEN}/kb/<domain>/ (AgentSpec)
+
+  merge_strategy: "local-wins"
+
+  behavior: |
+    When an agent references .claude/kb/{domain}/, the runtime checks the
+    user's project first. Existing files in .claude/kb/{domain}/ override
+    plugin files at the same relative path. Missing files fall back to the
+    plugin KB. Domains that exist only in the plugin are loaded entirely
+    from the plugin.
+
+  scaffolding:
+    description: |
+      SessionStart hook creates .claude/kb/ and writes README on first run.
+      The README is written once and preserved across runs.
+    paths:
+      - ".claude/kb/"
+    readme: ".claude/kb/README.md"
+
+  rules:
+    - "Resolution is per-file path, not whole-domain replacement"
+    - "Agents should reference .claude/kb/{domain}/ for local override to apply"
+    - "Custom domains created via /create-kb live only in the user's project"
+
+  documentation:
+    user_facing: "docs/concepts/kb-overrides.md"
+    reuse_guide: "docs/concepts/kb-agent-reuse.md"
+
+# =============================================================================
+# PACK RESOLUTION (Org-Wide Sharing — v3.5+)
+# =============================================================================
+
+pack_resolution:
+  order:
+    - "local"   # .claude/agents/, .claude/kb/
+    - "pack"    # .claude/packs/{pack_id}/ (staged; applied copies in local)
+    - "plugin"  # ${ROOT_TOKEN}/
+
+  behavior: |
+    pack install stages content under .claude/packs/{pack_id}/ and applies
+    agents/kb into workspace paths. Local files always win on conflict during
+    apply. pack remove deletes staged content and lockfile entry only; applied
+    copies in .claude/agents/ and .claude/kb/ remain.
+
+  lockfile: ".claude/packs/.lock.yaml"
+  schema: ".claude/sdd/architecture/PACK_SCHEMA.yaml"
+  cli: "scripts/pack.py"
+
+  documentation:
+    user_facing: "docs/tutorials/agentspec-packs.md"
+    reuse_guide: "docs/concepts/kb-agent-reuse.md"
 
 # =============================================================================
 # PHASE 0: BRAINSTORM (Optional)
@@ -781,6 +840,15 @@ version_history:
     changes:
       - "Added behavioral_enforcement (the Judger, ADR-003): a model-based, contract-aware evaluation engine that runs after the Linter passes (never on a structural FAIL). Tiered adversarial panel (smoke/standard/high-assurance) with an always-present fault-seeker; FAIL emission is controlled by the tier, not reinterpreted by the consumer — smoke and standard are WARN-capped by construction, and the high-assurance tier emits a blocking FAIL only under a strict three-way cross-model consensus. Mirrors the Linter's entry-point shape and reuses its Verdict/Finding value objects."
       - "Additive change — no modification to the Linter (contract_enforcement) or the existing phase contracts."
+
+  - version: "3.4.1"
+    date: "2026-06-22"
+    changes:
+      - "Added kb_resolution contract — file-level local-wins KB precedence"
+      - "Added pack_resolution contract for org-wide AgentSpec packs (v3.5 CLI)"
+      - "SessionStart hook scaffolds .claude/kb/ with override README"
+      - "Extended workspace path preservation for .claude/kb/ and .claude/packs/"
+      - "Shipped scripts/pack.py and scripts/prepare-upstream.py"
 
   - version: "3.4.0"
     date: "2026-07-15"

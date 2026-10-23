@@ -8,6 +8,7 @@
 |-------|------|-------------|
 | [Getting Started](getting-started/) | 10 min | Install, configure, build your first data pipeline |
 | [Core Concepts](concepts/) | 15 min | How SDD phases, agents, and KB work together |
+| [KB and Agent Reuse](concepts/kb-agent-reuse.md) | 5 min | Plugin vs local content; sharing across projects |
 
 ## Go Deeper
 

@@ -9,11 +9,16 @@
 <br/><br/>
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blueviolet?style=flat-square)](plugin/)
+[![Cursor Plugin](https://img.shields.io/badge/Cursor-Plugin-1A1A1A?style=flat-square)](docs/getting-started/cursor.md)
+[![VS Code + Copilot](https://img.shields.io/badge/VS%20Code%20%2B%20Copilot-Agent%20Plugin-007ACC?style=flat-square)](docs/getting-started/vscode-copilot.md)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-7c3aed?style=flat-square)](packages/agentspec-mcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/badge/v3.5.0-green?style=flat-square)](CHANGELOG.md)
 
 **A single AI agent reviewing your data pipeline will miss things.**<br/>
 **58 specialized agents with 24 knowledge domains will not.**
+
+<sub>Maintained by [Emerson Antonio](https://github.com/emerson-antonio-ops) · fork of [luanmorenommaciel/agentspec](https://github.com/luanmorenommaciel/agentspec) by Luan Moreno</sub>
 
 <br/>
 
@@ -33,32 +38,70 @@ AgentSpec solves this with **Spec-Driven Data Engineering**: a 5-phase workflow 
 
 ## Install
 
-```bash
-# Install the plugin (one-time)
-claude plugin marketplace add luanmorenommaciel/agentspec
-claude plugin install agentspec
-```
+AgentSpec runs natively in **Claude Code**, **Cursor**, and **VS Code + Copilot**, and exposes the same capabilities to any MCP-compatible client via the **AgentSpec MCP** server.
 
-Done. Every Claude Code session now has 58 agents, 31 commands, and 24 KB domains. Updates are one command:
+| Platform | Install | Slash Commands | Setup Guide |
+|----------|---------|----------------|-------------|
+| Claude Code | `claude plugin marketplace add emerson-antonio-ops/agentspec && claude plugin install agentspec` | `/agentspec:*` (namespaced) | [Guide](docs/getting-started/claude-code.md) |
+| Cursor | `cp -R dist/cursor ~/.cursor/plugins/local/agentspec` (Marketplace coming) | `/define`, `/build`, … | [Guide](docs/getting-started/cursor.md) |
+| VS Code + Copilot | Enable `chat.plugins.enabled` and load `dist/vscode-copilot/` (or use `.github/prompts/` fallback) | `/define`, `/build`, … | [Guide](docs/getting-started/vscode-copilot.md) |
+| MCP Client | Add `dist/mcp/mcp.json` to your client's MCP config | `kb_search`, `route_agent`, `judge`, … | [Package README](packages/agentspec-mcp/README.md) |
 
 ```bash
-claude plugin update agentspec
+# Build every target locally
+git clone https://github.com/emerson-antonio-ops/agentspec.git
+cd agentspec
+make build-all          # → dist/claude, dist/cursor, dist/vscode-copilot, dist/mcp
+make validate-all       # sanity-check every artifact
 ```
 
 > **Override any agent locally** — drop a file in `.claude/agents/<category>/<agent-name>.md` and it takes precedence over the plugin version. See [Agent Overrides](docs/concepts/agent-overrides.md).
 
+> **Sharing KB and agents across projects** — understand what is global (plugin) vs local (your repo), and how to contribute upstream. See [KB and Agent Reuse](docs/concepts/kb-agent-reuse.md).
+
 <details>
-<summary><b>Alternative install methods</b></summary>
+<summary><b>Install the upstream (stable) plugin in Claude Code</b></summary>
+
+If you want the official upstream release instead of this fork:
 
 ```bash
-# Local testing (no install needed)
-git clone https://github.com/luanmorenommaciel/agentspec.git
-claude --plugin-dir ./agentspec/plugin
-
-# Legacy copy (pre-plugin, still works)
-git clone https://github.com/luanmorenommaciel/agentspec.git
-cp -r agentspec/.claude your-project/.claude
+claude plugin marketplace add luanmorenommaciel/agentspec
+claude plugin install agentspec
+claude plugin update agentspec
 ```
+
+The upstream is Claude Code only. This fork (`emerson-antonio-ops/agentspec`) adds native bundles for Cursor and VS Code + Copilot, an MCP server, and centralized maintainer metadata.
+
+</details>
+
+<details>
+<summary><b>Cursor — local install end-to-end</b></summary>
+
+```bash
+git clone https://github.com/emerson-antonio-ops/agentspec.git
+cd agentspec
+make build-cursor                                    # → dist/cursor/
+cp -R dist/cursor ~/.cursor/plugins/local/agentspec  # sideload as "Imported"
+```
+
+Optional — also wire the [AgentSpec MCP server](packages/agentspec-mcp/) into `~/.cursor/mcp.json` so Cursor exposes `kb_search`, `route_agent`, `sdd_status`, `kb_read`, and `judge` as MCP tools:
+
+```jsonc
+{
+  "mcpServers": {
+    "agentspec-mcp": {
+      "command": "python3",
+      "args": ["/absolute/path/to/agentspec/dist/mcp/server/agentspec_mcp/__main__.py"],
+      "env": {
+        "AGENTSPEC_ROOT": "/absolute/path/to/agentspec/dist/mcp",
+        "AGENTSPEC_RESOURCES": "/absolute/path/to/agentspec/dist/mcp/resources"
+      }
+    }
+  }
+}
+```
+
+Reload Cursor (`Cmd+Shift+P` → "Developer: Reload Window"). The plugin appears in `Settings → Plugins` as **agentspec [Imported]** maintained by Emerson Antonio.
 
 </details>
 
@@ -218,17 +261,53 @@ agentspec/
 │   ├── kb/                  # 24 knowledge base domains
 │   └── sdd/                 # Templates, contracts, features, archive
 │
-├── plugin/                  # Distributable Claude Code plugin
+├── plugin/                  # Legacy Claude Code build (build-plugin.sh)
 │   ├── .claude-plugin/      # Manifest + marketplace config
 │   ├── agents/              # Path-rewritten agents
 │   ├── skills/              # 16 skills (15 from .claude/ + 1 plugin-only)
 │   ├── hooks/               # SessionStart workspace init
 │   └── ...                  # commands, kb, sdd, scripts
+├── plugin-extras/           # Plugin-only content (merged by all builds)
 │
-├── plugin-extras/           # Plugin-only content (merged by build)
-├── build-plugin.sh          # Packages .claude/ → plugin/
+├── dist/                    # Multi-platform output (scripts/build_all.py)
+│   ├── claude/              # Claude Code plugin (.claude-plugin + marketplace.json)
+│   ├── cursor/              # Cursor plugin (.cursor-plugin + Claude mirror + 36 skills)
+│   ├── vscode-copilot/      # VS Code Agent Plugin + .github/prompts + .github/agents
+│   └── mcp/                 # Universal MCP bundle (server + resources)
+│
+├── packages/
+│   └── agentspec-mcp/       # AgentSpec MCP server source (zero-dep JSON-RPC)
+│
+├── scripts/
+│   ├── lib/                 # Shared build core
+│   │   ├── platforms.py     #   PROJECT_METADATA + PlatformProfile per target
+│   │   ├── path_rewrite.py  #   .claude/ → ${TOKEN}, legacy token migration
+│   │   ├── frontmatter.py   #   YAML frontmatter parser/renderer
+│   │   └── packaging.py     #   Copy/clean/summarize/regen agent-router
+│   ├── build_all.py         # Multi-platform orchestrator
+│   ├── build_claude.py      # Claude Code target
+│   ├── build_cursor.py      # Cursor target (commands → skills, Cursor-native manifest)
+│   ├── build_copilot.py     # VS Code + Copilot target (workspace prompts/agents)
+│   ├── build_mcp.py         # MCP target
+│   ├── validate_dist.py     # CI gate for every dist/ target
+│   ├── generate-agent-router.py
+│   └── judge.py
+│
+├── tests/                   # pytest suite (83 tests; build core + targets + MCP)
+├── build-plugin.sh          # Legacy bash builder (Claude only)
 └── docs/                    # Getting started, concepts, tutorials, reference
 ```
+
+**Per-platform path tokens** (handled by `scripts/lib/path_rewrite.py`):
+
+| Target | Root token | Why |
+|:--|:--|:--|
+| Claude Code | `${CLAUDE_PLUGIN_ROOT}` | Native Claude variable. |
+| Cursor | `${PLUGIN_ROOT}` | Cursor expands `${PLUGIN_ROOT}` for sideloaded plugins. |
+| VS Code + Copilot | `${CLAUDE_PLUGIN_ROOT}` | Copilot Agent Plugins auto-detect Claude-format manifests. |
+| MCP Server | `${AGENTSPEC_ROOT}` | Resolved from the MCP client's env (`AGENTSPEC_ROOT` / `AGENTSPEC_RESOURCES`). |
+
+The build core migrates the legacy `${CLAUDE_PLUGIN_ROOT}` token to the target's own root automatically, so handcrafted artifacts like `plugin-extras/hooks/hooks.json` ship correctly across all platforms.
 
 <br/>
 
@@ -248,6 +327,23 @@ agentspec/
 We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Agents** · **KB Domains** · **Commands** · **Plugin Development** · **Documentation**
+
+<br/>
+
+## Maintainer & Attribution
+
+| Role | Who | Where |
+|:--|:--|:--|
+| **Maintainer** (this fork) | Emerson Antonio | [emerson-antonio-ops/agentspec](https://github.com/emerson-antonio-ops/agentspec) |
+| **Original author** | Luan Moreno | [luanmorenommaciel/agentspec](https://github.com/luanmorenommaciel/agentspec) |
+
+Plugin manifests across every target (`dist/claude/.claude-plugin/plugin.json`, `dist/cursor/.cursor-plugin/plugin.json`, `dist/vscode-copilot/.claude-plugin/plugin.json`) credit the maintainer in `author` and preserve the original author in `contributors[0]` with role `original-author`. Authorship is centralized in `scripts/lib/platforms.py::PROJECT_METADATA` so the three manifests cannot drift.
+
+This fork adds — on top of the upstream Claude Code plugin:
+
+- Native bundles for **Cursor** (`.cursor-plugin` + 36 explicit skills) and **VS Code + Copilot** (`.github/prompts` + `.github/agents` with SDD handoffs).
+- The **AgentSpec MCP server** (`packages/agentspec-mcp/`) exposing `kb_search`, `kb_read`, `route_agent`, `sdd_status`, and `judge` as MCP tools to any MCP-compatible client.
+- A Python build core (`scripts/lib/`) with per-target path rewriting, legacy token migration, and 83 pytest tests covering manifests, hooks, and JSON-RPC.
 
 <br/>
 

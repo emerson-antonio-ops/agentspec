@@ -173,10 +173,17 @@ $EDITOR .claude/agents/workflow/build-agent.md
 
 Claude Code's native plugin loader handles precedence — your version wins when names match. See [Agent Overrides](../concepts/agent-overrides.md) for the full pattern, including custom agents and verification.
 
+## Sharing KB and Agents Across Projects
+
+The plugin ships 58 agents and 24 KB domains to **every** project. Custom agents (`.claude/agents/custom/`) and KB domains (`.claude/kb/`) you create stay in **that repository only** unless you copy them, use a shared pack (planned v3.5), or contribute upstream.
+
+See [KB and Agent Reuse](../concepts/kb-agent-reuse.md) for the plugin vs local model and [Upstream Contribution](../contributing/upstream-kb-agents.md) to open a PR with generic patterns.
+
 ## What's Next
 
 - [Core Concepts](../concepts/) -- understand how phases, agents, and KB work together
 - [Agent Overrides](../concepts/agent-overrides.md) -- customize phase agents to your team's conventions
+- [KB and Agent Reuse](../concepts/kb-agent-reuse.md) -- what is shared globally vs local to your repo
 - [Tutorials](../tutorials/) -- dbt, star schema, data quality, Spark, streaming, RAG walkthroughs
 - [Reference](../reference/) -- full command, agent, and KB domain catalog
 
